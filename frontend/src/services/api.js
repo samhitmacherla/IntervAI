@@ -33,6 +33,16 @@ export async function generateSession(resumeId, difficulty = "medium", mode = "m
 
   return data;
 }
+// Compare an uploaded resume against a job description.
+export async function matchResumeToJob(resumeId, jobDescription) {
+  const { data } = await api.post("/generate/match", {
+    resumeId,
+    jobDescription,
+  });
+
+  return data;
+}
+
 // Submit one OPEN-question answer (main question or follow-up) and get feedback back.
 // sub/difficulty are included so the backend can still score a follow-up question
 // even though follow-ups aren't backed by a row in the database.

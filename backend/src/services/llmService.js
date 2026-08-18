@@ -386,5 +386,67 @@ Return ONLY:
     questions: parsed.questions.slice(0, 5).map(normalizeQuestion),
   };
 }
+async function generateResumeJobMatch(resumeText, jobDescription) {
+  const systemPrompt =
+    "You are an expert resume and job-description matching assistant. Return ONLY valid raw JSON.";
 
-module.exports = { generateQuestions, generateFeedback, generatePracticeQuestions };
+  const prompt = `Compare the candidate's resume against the job description.
+
+RESUME:
+${resumeText.slice(0, 5000)}
+
+JOB DESCRIPTION:
+${jobDescription.slice(0, 5000)}
+
+Calculate how well the resume matches the job description.
+
+Rules:
+- Return a match percentage from 0 to 100.
+- Base the score on skills, technologies, experience, projects, education, and other relevant qualifications explicitly present in the resume and job description.
+- Do not treat missing information as proof that the candidate lacks the skill.
+- Do not invent resume information.
+- matchedSkills should contain skills/requirements clearly supported by the resume.
+- missingSkills should contain important job requirements that are not clearly supported by the resume.
+- Return at most 5 matched skills.
+- Return at most 5 missing skills.
+- Keep each skill as a short phrase.
+- Keep the summary under 30 words.
+- The percentage is an AI-based match score, not a hiring probability.
+
+Return ONLY:
+{
+  "matchPercentage": 0,
+  "matchedSkills": [],
+  "missingSkills": [],
+  "summary": "..."
+}`;
+
+  const raw = await callGroq(prompt, 1200, systemPrompt);
+  const result = extractJSON(raw);
+
+  const matchPercentage = Number(result.matchPercentage);
+
+  if (
+    !Number.isFinite(matchPercentage) ||
+    matchPercentage < 0 ||
+    matchPercentage > 100
+  ) {
+    throw new Error("AI returned an invalid match percentage.");
+  }
+
+  return {
+    matchPercentage: Math.round(matchPercentage),
+    matchedSkills: Array.isArray(result.matchedSkills)
+      ? result.matchedSkills.slice(0, 10)
+      : [],
+    missingSkills: Array.isArray(result.missingSkills)
+      ? result.missingSkills.slice(0, 10)
+      : [],
+    summary:
+      typeof result.summary === "string"
+        ? result.summary
+        : "The resume was compared against the job description.",
+  };
+}
+
+module.exports = { generateQuestions, generateFeedback, generatePracticeQuestions,generateResumeJobMatch, };

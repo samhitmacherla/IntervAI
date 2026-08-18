@@ -9,6 +9,7 @@ const {
   generateQuestions,
   generateFeedback,
   generatePracticeQuestions,
+   generateResumeJobMatch,
 } = require("../services/llmService");
 
 const router = express.Router();
@@ -135,6 +136,51 @@ router.post("/practice", async (req, res) => {
     return sendLLMError(res, err, "Couldn't create the targeted practice set — try again.");
   }
 });
+// Compare a resume against a job description and return an AI match score.
+router.post("/match", async (req, res) => {
+  try {
+    const { resumeId, jobDescription } = req.body;
+
+    if (!resumeId) {
+      return res.status(400).json({
+        error: "resumeId is required",
+      });
+    }
+
+    if (!jobDescription || !jobDescription.trim()) {
+      return res.status(400).json({
+        error: "Job description is required",
+      });
+    }
+
+    const resume = await prisma.resume.findUnique({
+      where: { id: resumeId },
+    });
+
+    if (!resume) {
+      return res.status(404).json({
+        error: "Resume not found",
+      });
+    }
+
+    const result = await generateResumeJobMatch(
+      resume.rawText,
+      jobDescription.trim()
+    );
+
+    res.json({
+      resumeId: resume.id,
+      ...result,
+    });
+  } catch (err) {
+    return sendLLMError(
+      res,
+      err,
+      "Couldn't calculate the resume-job match. Please try again."
+    );
+  }
+});
+
 
 function checkIfGibberish(text) {
   if (!text || text.trim().length === 0) return true;

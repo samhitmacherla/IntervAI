@@ -4,7 +4,7 @@ import HomePage from "./pages/HomePage";
 import QuestionsPage from "./pages/QuestionsPage";
 import HistoryPage from "./pages/HistoryPage";
 import QuestionBankPage from "./pages/QuestionBankPage";
-
+import MatchPage from "./pages/MatchPage";
 function AppShell() {
   const location = useLocation();
   const interviewMode = location.pathname === "/questions";
@@ -16,6 +16,7 @@ function AppShell() {
         <Route path="/questions" element={<QuestionsPage />} />
         <Route path="/question-bank" element={<QuestionBankPage />} />
         <Route path="/history" element={<HistoryPage />} />
+        <Route path="/match" element={<MatchPage />} />
       </Routes>
     </div>
   );

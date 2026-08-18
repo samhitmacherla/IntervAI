@@ -1,11 +1,21 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Brain, FileQuestion, History, Menu, X, Play } from "lucide-react";
+import {
+  Brain,
+  FileQuestion,
+  History,
+  Menu,
+  X,
+  Play,
+  Target,
+} from "lucide-react";
 import { useState } from "react";
+ 
 
 // Only features that exist in ResInt are exposed in the menu.
 const navItems = [
   { to: "/", label: "Dashboard", icon: Brain, end: true },
   { to: "/question-bank", label: "Question Bank", icon: FileQuestion },
+  { to: "/match", label: "Resume Match", icon: Target },
   { to: "/history", label: "Performance History", icon: History },
 ];
 
